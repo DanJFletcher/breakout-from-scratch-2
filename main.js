@@ -5,6 +5,13 @@ const canvas = /** @type {HTMLCanvasElement} */ (
 )
 const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'))
 
+/**
+ * Track the mouse
+ */
+const mouse = {
+  position: { x: 0, y: 0 },
+}
+
 const ball = new Ball({
   width: 12,
   height: 12,
@@ -46,6 +53,12 @@ function frame(hrt) {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
+  ctx.fillStyle = 'White'
+  ctx.font = 'normal 24pt Arial'
+
+  ctx.fillText('mouse x: ' + mouse.position.x, 10, 26)
+  ctx.fillText('mouse y: ' + mouse.position.y, 10, 56)
+
   ctx.fillStyle = 'white'
   ctx.fillRect(ball.position.x, ball.position.y, ball.width, ball.height)
 
@@ -54,6 +67,30 @@ function frame(hrt) {
 
   requestAnimationFrame(frame)
 }
+
+/**
+ * Handle mouse move events.
+ * @param {MouseEvent} e
+ */
+function mouseMoveHandler(e) {
+  // `movementX` is a relative position. It's the change in position only, so
+  // we need to add it to the mouse position.
+  mouse.position.x += e.movementX
+}
+
+function pointerLockChange() {
+  // We'll subscribe to mousemove events if the canvas is the active pointerLockElement
+  if (document.pointerLockElement === canvas) {
+    document.addEventListener('mousemove', mouseMoveHandler)
+  } else {
+    document.removeEventListener('mousemove', mouseMoveHandler)
+  }
+}
+
+// On click, request pointer lock
+canvas.addEventListener('click', canvas.requestPointerLock)
+
+document.addEventListener('pointerlockchange', pointerLockChange)
 
 // Kick off the game loop!
 requestAnimationFrame(frame)
