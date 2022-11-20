@@ -1,9 +1,16 @@
 import { Ball } from './modules/entities/ball.js'
+import { Paddle } from './modules/entities/paddle.js'
 
 const canvas = /** @type {HTMLCanvasElement} */ (
   document.querySelector('canvas')
 )
 const ctx = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'))
+
+const paddle = new Paddle({
+  position: { x: canvas.width / 2 - 104 / 2, y: canvas.height - 32 },
+  width: 104,
+  height: 16,
+})
 
 /**
  * Track the mouse
@@ -60,6 +67,12 @@ function frame(hrt) {
   ctx.fillText('mouse y: ' + mouse.position.y, 10, 56)
 
   ctx.fillStyle = 'white'
+  ctx.fillRect(
+    paddle.position.x,
+    paddle.position.y,
+    paddle.width,
+    paddle.height,
+  )
   ctx.fillRect(ball.position.x, ball.position.y, ball.width, ball.height)
 
   // Track the last time for the delta time calculation in the subsequent frame.
