@@ -16,7 +16,7 @@ const paddle = new Paddle({
  * Track the mouse
  */
 const mouse = {
-  position: { x: 0, y: 0 },
+  position: { x: paddle.position.x, y: 0 },
 }
 
 const ball = new Ball({
@@ -37,6 +37,9 @@ function frame(hrt) {
   // How much time has elapsed since last frame?
   // Convert time to seconds
   dt = (hrt - last) / 1000
+
+  // Update the position of the paddle based on the mouse
+  paddle.position.x = mouse.position.x
 
   // Account for delta time by applying it to the ball's velocity
   ball.position.x += ball.velocity.x * dt
