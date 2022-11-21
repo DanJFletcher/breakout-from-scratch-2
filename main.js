@@ -1,5 +1,6 @@
 import { Ball } from './modules/entities/ball.js'
 import { Paddle } from './modules/entities/paddle.js'
+import { clamp } from './modules/math.js'
 
 const canvas = /** @type {HTMLCanvasElement} */ (
   document.querySelector('canvas')
@@ -63,12 +64,6 @@ function frame(hrt) {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-  ctx.fillStyle = 'White'
-  ctx.font = 'normal 24pt Arial'
-
-  ctx.fillText('mouse x: ' + mouse.position.x, 10, 26)
-  ctx.fillText('mouse y: ' + mouse.position.y, 10, 56)
-
   ctx.fillStyle = 'white'
   ctx.fillRect(
     paddle.position.x,
@@ -92,6 +87,9 @@ function mouseMoveHandler(e) {
   // `movementX` is a relative position. It's the change in position only, so
   // we need to add it to the mouse position.
   mouse.position.x += e.movementX
+
+  // Clamp the mouse position to the canvas width
+  mouse.position.x = clamp(mouse.position.x, 0, canvas.width - paddle.width)
 }
 
 function pointerLockChange() {
