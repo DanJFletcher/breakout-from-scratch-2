@@ -1,4 +1,4 @@
-import { Vecotor2d } from '../components/vector2d.js'
+import { Vector2d } from '../components/vector2d.js'
 
 export class Ball {
   /**
@@ -6,8 +6,8 @@ export class Ball {
    * @param {object} opts
    * @param {number} opts.width
    * @param {number} opts.height
-   * @param {Vecotor2d} opts.position
-   * @param {Vecotor2d} opts.velocity
+   * @param {Vector2d} opts.position
+   * @param {Vector2d} opts.velocity
    */
   constructor(opts) {
     this.width = opts.width

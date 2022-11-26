@@ -1,3 +1,10 @@
+import {
+  aabbBottom,
+  aabbLeft,
+  aabbRight,
+  aabbTop,
+  intersects,
+} from './modules/collision.js'
 import { Ball } from './modules/entities/ball.js'
 import { Paddle } from './modules/entities/paddle.js'
 import { clamp } from './modules/math.js'
@@ -42,22 +49,63 @@ function frame(hrt) {
   // Update the position of the paddle based on the mouse
   paddle.position.x = mouse.position.x
 
-  // Account for delta time by applying it to the ball's velocity
+  // Move and check for collisions along the x axis
   ball.position.x += ball.velocity.x * dt
+  let ballPaddleCollisionHandled = false
+
+  if (intersects(ball, paddle)) {
+    ballPaddleCollisionHandled = true
+
+    // We know the ball is colliding with the paddle, but we don't know which side
+    const closestSide =
+      Math.abs(aabbRight(paddle) - aabbLeft(ball)) <
+        Math.abs(aabbLeft(paddle) - aabbRight(ball))
+        ? 'right'
+        : 'left'
+    // Are we moving to the left or right?
+    if (ball.velocity.x < 0) {
+      // Moving to the left
+      if (closestSide === 'left') {
+        // We hit the left side of the paddle
+        ball.position.x = aabbLeft(paddle) - ball.width
+      } else {
+        // We hit the right side of the paddle
+        ball.position.x = aabbRight(paddle)
+        ball.velocity.x = -ball.velocity.x
+      }
+    } else if (ball.velocity.x > 0) {
+      // Moving to the right
+      if (closestSide === 'right') {
+        // We hit the right side of the paddle
+        ball.position.x = aabbRight(paddle)
+      } else {
+        // We hit the left side of the paddle
+        ball.position.x = aabbLeft(paddle) - ball.width
+        ball.velocity.x = -ball.velocity.x
+      }
+    }
+  }
+
+  // Move and check for collisions along the y axis
   ball.position.y += ball.velocity.y * dt
 
-  if (ball.position.x + ball.width > canvas.width) {
+  if (!ballPaddleCollisionHandled && intersects(ball, paddle)) {
+    ball.position.y = aabbTop(paddle) - ball.height
+    ball.velocity.y = -ball.velocity.y
+  }
+
+  if (aabbRight(ball) > canvas.width) {
     ball.position.x = canvas.width - ball.width
     ball.velocity.x = -ball.velocity.x
-  } else if (ball.position.x < 0) {
+  } else if (aabbLeft(ball) < 0) {
     ball.position.x = 0
     ball.velocity.x = -ball.velocity.x
   }
 
-  if (ball.position.y + ball.height > canvas.height) {
+  if (aabbBottom(ball) > canvas.height) {
     ball.position.y = canvas.height - ball.height
     ball.velocity.y = -ball.velocity.y
-  } else if (ball.position.y < 0) {
+  } else if (aabbTop(ball) < 0) {
     ball.position.y = 0
     ball.velocity.y = -ball.velocity.y
   }

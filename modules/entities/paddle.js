@@ -1,11 +1,11 @@
 
-import { Vecotor2d } from '../components/vector2d.js'
+import { Vector2d } from '../components/vector2d.js'
 
 export class Paddle {
 
 	/**
 	 * @param {Object} opts
-	 * @param {Vecotor2d} opts.position
+	 * @param {Vector2d} opts.position
 	 * @param {number} opts.width
 	 * @param {number} opts.height
 	 */

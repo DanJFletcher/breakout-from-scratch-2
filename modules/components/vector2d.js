@@ -1,4 +1,4 @@
-export class Vecotor2d {
+export class Vector2d {
   /**
    *
    * @param {number} x default 0
