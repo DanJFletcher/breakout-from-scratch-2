@@ -32,6 +32,9 @@ const ball = new Ball({
   height: 12,
   position: { x: 100, y: 100 },
   velocity: { x: 300, y: 300 },
+  maxVelocity: { x: 100, y: 600 },
+  paddleBounceFactor: { x: 250, y: 0 },
+  paddleCollisionSpeedBoost: { x: 0, y: 100 },
 })
 
 let dt = 0
@@ -59,7 +62,7 @@ function frame(hrt) {
     // We know the ball is colliding with the paddle, but we don't know which side
     const closestSide =
       Math.abs(aabbRight(paddle) - aabbLeft(ball)) <
-        Math.abs(aabbLeft(paddle) - aabbRight(ball))
+      Math.abs(aabbLeft(paddle) - aabbRight(ball))
         ? 'right'
         : 'left'
     // Are we moving to the left or right?
@@ -91,7 +94,24 @@ function frame(hrt) {
 
   if (!ballPaddleCollisionHandled && intersects(ball, paddle)) {
     ball.position.y = aabbTop(paddle) - ball.height
+
+    if (Math.abs(ball.velocity.y) < ball.maxVelocity.y) {
+      ball.velocity.y += ball.paddleCollisionSpeedBoost.y
+    }
+
     ball.velocity.y = -ball.velocity.y
+
+    const halfPaddleWidth = paddle.width / 2
+    // How far from the center of the paddle is the ball?
+    // The further from the center, the steeper the bounce.
+    const difference = paddle.center.x - ball.center.x
+    // At this point difference is between 0..half, but we need this
+    // as a percentage from 0..1.
+    const factor = Math.abs(difference) / halfPaddleWidth
+    // We'll flip the sign of difference and multiply by our target
+    // bounce velocity and factor. This gives us "control" of the ball.
+    ball.velocity.x =
+      Math.sign(-difference) * ball.paddleBounceFactor.x * factor
   }
 
   if (aabbRight(ball) > canvas.width) {

@@ -8,11 +8,27 @@ export class Ball {
    * @param {number} opts.height
    * @param {Vector2d} opts.position
    * @param {Vector2d} opts.velocity
+   * @param {Vector2d} opts.maxVelocity
+   * @param {Vector2d} opts.paddleBounceFactor
+   * @param {Vector2d} opts.paddleCollisionSpeedBoost
    */
   constructor(opts) {
     this.width = opts.width
     this.height = opts.height
     this.position = opts.position
     this.velocity = opts.velocity
+    this.maxVelocity = opts.maxVelocity
+    this.paddleBounceFactor = opts.paddleBounceFactor
+    this.paddleCollisionSpeedBoost = opts.paddleCollisionSpeedBoost
+  }
+
+  /**
+   * Return center position
+   */
+  get center() {
+    return {
+      x: this.position.x + this.width / 2,
+      y: this.position.y + this.height / 2,
+    }
   }
 }
