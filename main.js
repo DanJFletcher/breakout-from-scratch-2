@@ -52,8 +52,15 @@ function frame(hrt) {
   // Update the position of the paddle based on the mouse
   paddle.position.x = mouse.position.x
 
+  if (ball.state === Ball.State.OnPaddle) {
+    ball.position.x = paddle.center.x - ball.width / 2
+    ball.position.y = aabbTop(paddle) - ball.height
+  }
+
   // Move and check for collisions along the x axis
-  ball.position.x += ball.velocity.x * dt
+  if (ball.state === Ball.State.Free) {
+    ball.position.x += ball.velocity.x * dt
+  }
   let ballPaddleCollisionHandled = false
 
   if (intersects(ball, paddle)) {
@@ -90,7 +97,9 @@ function frame(hrt) {
   }
 
   // Move and check for collisions along the y axis
-  ball.position.y += ball.velocity.y * dt
+  if (ball.state === Ball.State.Free) {
+    ball.position.y += ball.velocity.y * dt
+  }
 
   if (!ballPaddleCollisionHandled && intersects(ball, paddle)) {
     ball.position.y = aabbTop(paddle) - ball.height
@@ -123,8 +132,7 @@ function frame(hrt) {
   }
 
   if (aabbBottom(ball) > canvas.height) {
-    ball.position.y = canvas.height - ball.height
-    ball.velocity.y = -ball.velocity.y
+    ball.state = Ball.State.OnPaddle
   } else if (aabbTop(ball) < 0) {
     ball.position.y = 0
     ball.velocity.y = -ball.velocity.y
@@ -170,7 +178,15 @@ function pointerLockChange() {
 }
 
 // On click, request pointer lock
-canvas.addEventListener('click', canvas.requestPointerLock)
+canvas.addEventListener('click', () => {
+  canvas.requestPointerLock()
+
+  if (document.pointerLockElement === canvas) {
+    if (ball.state === Ball.State.OnPaddle) {
+      ball.state = Ball.State.Free
+    }
+  }
+})
 
 document.addEventListener('pointerlockchange', pointerLockChange)
 

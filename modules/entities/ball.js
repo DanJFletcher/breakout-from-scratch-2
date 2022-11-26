@@ -2,6 +2,11 @@ import { Vector2d } from '../components/vector2d.js'
 
 export class Ball {
   /**
+   * @type {keyof Ball.State}
+   */
+  state = Ball.State.OnPaddle
+
+  /**
    *
    * @param {object} opts
    * @param {number} opts.width
@@ -20,6 +25,11 @@ export class Ball {
     this.maxVelocity = opts.maxVelocity
     this.paddleBounceFactor = opts.paddleBounceFactor
     this.paddleCollisionSpeedBoost = opts.paddleCollisionSpeedBoost
+  }
+
+  static State = {
+    OnPaddle: /** @type {'OnPaddle'} */ ('OnPaddle'),
+    Free: /** @type {'Free'} */ ('Free'),
   }
 
   /**
