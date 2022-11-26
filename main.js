@@ -5,6 +5,7 @@ import {
   aabbTop,
   intersects,
 } from './modules/collision.js'
+import { TITLE_BAR_HEIGHT_PX } from './modules/constants.js'
 import { Ball } from './modules/entities/ball.js'
 import { Paddle } from './modules/entities/paddle.js'
 import { clamp } from './modules/math.js'
@@ -25,6 +26,15 @@ const paddle = new Paddle({
  */
 const mouse = {
   position: { x: paddle.position.x, y: 0 },
+}
+
+/**
+ * Track some game state
+ */
+const game = {
+  playerLives: 3,
+  score: 0,
+  currentLevel: 0,
 }
 
 const ball = new Ball({
@@ -133,14 +143,25 @@ function frame(hrt) {
 
   if (aabbBottom(ball) > canvas.height) {
     ball.state = Ball.State.OnPaddle
-  } else if (aabbTop(ball) < 0) {
-    ball.position.y = 0
+  } else if (aabbTop(ball) < TITLE_BAR_HEIGHT_PX) {
+    ball.position.y = TITLE_BAR_HEIGHT_PX
     ball.velocity.y = -ball.velocity.y
   }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.4)'
+  ctx.fillRect(0, 0, canvas.width, TITLE_BAR_HEIGHT_PX)
+
   ctx.fillStyle = 'white'
+  ctx.font = '16px sans-serif'
+  ctx.textAlign = 'center'
+  ctx.fillText(`Level: ${game.currentLevel}`, canvas.width / 2, 18)
+  ctx.textAlign = 'left'
+  ctx.fillText(`Score: ${game.score}`, 16, 18)
+  ctx.textAlign = 'right'
+  ctx.fillText(`Lives: ${game.playerLives}`, canvas.width - 16, 18)
+
   ctx.fillRect(
     paddle.position.x,
     paddle.position.y,
