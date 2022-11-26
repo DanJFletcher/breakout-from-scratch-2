@@ -8,6 +8,7 @@ import {
 import { TITLE_BAR_HEIGHT_PX } from './modules/constants.js'
 import { Ball } from './modules/entities/ball.js'
 import { Paddle } from './modules/entities/paddle.js'
+import { Game } from './modules/game.js'
 import { clamp } from './modules/math.js'
 
 const canvas = /** @type {HTMLCanvasElement} */ (
@@ -31,11 +32,7 @@ const mouse = {
 /**
  * Track some game state
  */
-const game = {
-  playerLives: 3,
-  score: 0,
-  currentLevel: 0,
-}
+const game = new Game()
 
 const ball = new Ball({
   width: 12,
@@ -143,6 +140,10 @@ function frame(hrt) {
 
   if (aabbBottom(ball) > canvas.height) {
     ball.state = Ball.State.OnPaddle
+    game.playerLives--
+    if (game.playerLives <= 0) {
+      game.state = Game.State.GameOver
+    }
   } else if (aabbTop(ball) < TITLE_BAR_HEIGHT_PX) {
     ball.position.y = TITLE_BAR_HEIGHT_PX
     ball.velocity.y = -ball.velocity.y
@@ -162,13 +163,26 @@ function frame(hrt) {
   ctx.textAlign = 'right'
   ctx.fillText(`Lives: ${game.playerLives}`, canvas.width - 16, 18)
 
-  ctx.fillRect(
-    paddle.position.x,
-    paddle.position.y,
-    paddle.width,
-    paddle.height,
-  )
-  ctx.fillRect(ball.position.x, ball.position.y, ball.width, ball.height)
+  if (game.state === Game.State.Playing) {
+    ctx.fillRect(
+      paddle.position.x,
+      paddle.position.y,
+      paddle.width,
+      paddle.height,
+    )
+    ctx.fillRect(ball.position.x, ball.position.y, ball.width, ball.height)
+  } else if (game.state === Game.State.GameOver) {
+    ctx.fillStyle = 'white'
+    ctx.font = '48px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2)
+    ctx.font = '24px sans-serif'
+    ctx.fillText(
+      'Click to play again',
+      canvas.width / 2,
+      canvas.height / 2 + 36,
+    )
+  }
 
   // Track the last time for the delta time calculation in the subsequent frame.
   last = hrt
@@ -203,7 +217,10 @@ canvas.addEventListener('click', () => {
   canvas.requestPointerLock()
 
   if (document.pointerLockElement === canvas) {
-    if (ball.state === Ball.State.OnPaddle) {
+    if (game.state === Game.State.GameOver) {
+      ball.state = Ball.State.OnPaddle
+      game.reset()
+    } else if (ball.state === Ball.State.OnPaddle) {
       ball.state = Ball.State.Free
     }
   }
