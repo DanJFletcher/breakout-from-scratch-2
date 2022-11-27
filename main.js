@@ -5,7 +5,15 @@ import {
   aabbTop,
   intersects,
 } from './modules/collision.js'
-import { TITLE_BAR_HEIGHT_PX } from './modules/constants.js'
+import {
+  BRICK_HEIGHT_PX,
+  BRICK_PADDING_SIDE_PX,
+  BRICK_PADDING_TOP_PX,
+  BRICK_WIDTH_PX,
+  LEVEL_HEIGHT_UNITS,
+  LEVEL_WIDTH_UNITS,
+  TITLE_BAR_HEIGHT_PX,
+} from './modules/constants.js'
 import { Ball } from './modules/entities/ball.js'
 import { Paddle } from './modules/entities/paddle.js'
 import { Game } from './modules/game.js'
@@ -171,6 +179,20 @@ function frame(hrt) {
       paddle.height,
     )
     ctx.fillRect(ball.position.x, ball.position.y, ball.width, ball.height)
+
+    // Draw the bricks
+    for (let row = 0; row < LEVEL_HEIGHT_UNITS; row++) {
+      for (let col = 0; col < LEVEL_WIDTH_UNITS; col++) {
+        const brick = {
+          x: col + BRICK_PADDING_SIDE_PX + col * BRICK_WIDTH_PX,
+          y: row + BRICK_PADDING_TOP_PX + row * BRICK_HEIGHT_PX,
+          width: BRICK_WIDTH_PX,
+          height: BRICK_HEIGHT_PX,
+        }
+
+        ctx.fillRect(brick.x, brick.y, brick.width, brick.height)
+      }
+    }
   } else if (game.state === Game.State.GameOver) {
     ctx.fillStyle = 'white'
     ctx.font = '48px sans-serif'
