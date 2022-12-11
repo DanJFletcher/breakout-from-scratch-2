@@ -1,3 +1,4 @@
+import { loadImage } from './modules/asset-loaders.js'
 import {
   aabbBottom,
   aabbLeft,
@@ -15,8 +16,10 @@ import {
   TITLE_BAR_HEIGHT_PX,
 } from './modules/constants.js'
 import { Ball } from './modules/entities/ball.js'
+import { Brick } from './modules/entities/brick.js'
 import { Paddle } from './modules/entities/paddle.js'
 import { Game } from './modules/game.js'
+import { generateBricks } from './modules/level-manager.js'
 import { clamp } from './modules/math.js'
 
 const canvas = /** @type {HTMLCanvasElement} */ (
@@ -55,31 +58,7 @@ const ball = new Ball({
 let dt = 0
 let last = performance.now()
 
-const image = await new Promise((resolve, reject) => {
-  const image = new Image()
-  image.onload = () => resolve(image)
-  image.onerror = (err) => reject(err)
-
-  image.src = './assets/levels.png'
-})
-
-// Temporary canvas to render level on and read pixel data from
-const canvas2 = document.createElement('canvas')
-canvas2.width = image.width
-canvas2.height = image.height
-const ctx2 = /** @type {CanvasRenderingContext2D} */ (canvas2.getContext('2d'))
-
-ctx2.drawImage(
-  image,
-  0, // sx
-  2 * LEVEL_HEIGHT_UNITS, // sy
-  LEVEL_WIDTH_UNITS, // sWidth
-  LEVEL_HEIGHT_UNITS, // sHeight
-  0, // dx
-  0, // dy
-  LEVEL_WIDTH_UNITS, // dWidth
-  LEVEL_HEIGHT_UNITS, // dHeight
-)
+const image = await loadImage('./assets/levels.png')
 
 /**
  * The game loop.
@@ -207,28 +186,25 @@ function frame(hrt) {
     ctx.fillRect(ball.position.x, ball.position.y, ball.width, ball.height)
 
     // Draw the bricks
-    for (let row = 0; row < LEVEL_HEIGHT_UNITS; row++) {
-      for (let col = 0; col < LEVEL_WIDTH_UNITS; col++) {
-        const pixel = ctx2.getImageData(col, row, 1, 1)
-        const [r, g, b, a] = pixel.data
+    const bricks = generateBricks({
+      image,
+      levelIndex: 0,
+      levelWidth: LEVEL_WIDTH_UNITS,
+      levelHeight: LEVEL_HEIGHT_UNITS,
+      brickWidth: BRICK_WIDTH_PX,
+      brickHeight: BRICK_HEIGHT_PX,
+      brickXOffset: BRICK_PADDING_SIDE_PX,
+      brickYOffset: BRICK_PADDING_TOP_PX,
+    })
 
-        // NOTE: Alpha is expressed in the range of 0 - 1, so we normalize the value
-        // by dividing by 255.
-        const alpha = a / 255
-
-        // Transparent pixel, no brick.
-        if (alpha === 0) continue
-
-        const brick = {
-          x: col + BRICK_PADDING_SIDE_PX + col * BRICK_WIDTH_PX,
-          y: row + BRICK_PADDING_TOP_PX + row * BRICK_HEIGHT_PX,
-          width: BRICK_WIDTH_PX,
-          height: BRICK_HEIGHT_PX,
-        }
-
-        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`
-        ctx.fillRect(brick.x, brick.y, brick.width, brick.height)
-      }
+    for (const brick of bricks) {
+      ctx.fillStyle = brick.rgba
+      ctx.fillRect(
+        brick.position.x,
+        brick.position.y,
+        brick.width,
+        brick.height,
+      )
     }
   } else if (game.state === Game.State.GameOver) {
     ctx.fillStyle = 'white'
