@@ -55,6 +55,32 @@ const ball = new Ball({
 let dt = 0
 let last = performance.now()
 
+const image = await new Promise((resolve, reject) => {
+  const image = new Image()
+  image.onload = () => resolve(image)
+  image.onerror = (err) => reject(err)
+
+  image.src = './assets/levels.png'
+})
+
+// Temporary canvas to render level on and read pixel data from
+const canvas2 = document.createElement('canvas')
+canvas2.width = image.width
+canvas2.height = image.height
+const ctx2 = /** @type {CanvasRenderingContext2D} */ (canvas2.getContext('2d'))
+
+ctx2.drawImage(
+  image,
+  0, // sx
+  2 * LEVEL_HEIGHT_UNITS, // sy
+  LEVEL_WIDTH_UNITS, // sWidth
+  LEVEL_HEIGHT_UNITS, // sHeight
+  0, // dx
+  0, // dy
+  LEVEL_WIDTH_UNITS, // dWidth
+  LEVEL_HEIGHT_UNITS, // dHeight
+)
+
 /**
  * The game loop.
  * @param {DOMHighResTimeStamp} hrt
@@ -183,6 +209,16 @@ function frame(hrt) {
     // Draw the bricks
     for (let row = 0; row < LEVEL_HEIGHT_UNITS; row++) {
       for (let col = 0; col < LEVEL_WIDTH_UNITS; col++) {
+        const pixel = ctx2.getImageData(col, row, 1, 1)
+        const [r, g, b, a] = pixel.data
+
+        // NOTE: Alpha is expressed in the range of 0 - 1, so we normalize the value
+        // by dividing by 255.
+        const alpha = a / 255
+
+        // Transparent pixel, no brick.
+        if (alpha === 0) continue
+
         const brick = {
           x: col + BRICK_PADDING_SIDE_PX + col * BRICK_WIDTH_PX,
           y: row + BRICK_PADDING_TOP_PX + row * BRICK_HEIGHT_PX,
@@ -190,6 +226,7 @@ function frame(hrt) {
           height: BRICK_HEIGHT_PX,
         }
 
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`
         ctx.fillRect(brick.x, brick.y, brick.width, brick.height)
       }
     }
