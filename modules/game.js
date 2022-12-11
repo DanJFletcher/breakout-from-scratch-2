@@ -1,4 +1,5 @@
 import { PLAYER_STARTING_LIVES } from './constants.js'
+import { LevelManager } from './level-manager.js'
 
 export class Game {
   playerLives = PLAYER_STARTING_LIVES
@@ -9,6 +10,13 @@ export class Game {
    * @type {keyof Game.State}
    */
   state = Game.State.Playing
+
+  /**
+   * @param {LevelManager} levelManager
+   */
+  constructor(levelManager) {
+    this.levelManager = levelManager
+  }
 
   reset() {
     this.playerLives = PLAYER_STARTING_LIVES

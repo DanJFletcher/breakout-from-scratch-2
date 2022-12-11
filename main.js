@@ -19,7 +19,7 @@ import { Ball } from './modules/entities/ball.js'
 import { Brick } from './modules/entities/brick.js'
 import { Paddle } from './modules/entities/paddle.js'
 import { Game } from './modules/game.js'
-import { generateBricks } from './modules/level-manager.js'
+import { LevelManager } from './modules/level-manager.js'
 import { clamp } from './modules/math.js'
 
 const canvas = /** @type {HTMLCanvasElement} */ (
@@ -43,7 +43,7 @@ const mouse = {
 /**
  * Track some game state
  */
-const game = new Game()
+const game = new Game(new LevelManager())
 
 const ball = new Ball({
   width: 12,
@@ -186,18 +186,7 @@ function frame(hrt) {
     ctx.fillRect(ball.position.x, ball.position.y, ball.width, ball.height)
 
     // Draw the bricks
-    const bricks = generateBricks({
-      image,
-      levelIndex: 0,
-      levelWidth: LEVEL_WIDTH_UNITS,
-      levelHeight: LEVEL_HEIGHT_UNITS,
-      brickWidth: BRICK_WIDTH_PX,
-      brickHeight: BRICK_HEIGHT_PX,
-      brickXOffset: BRICK_PADDING_SIDE_PX,
-      brickYOffset: BRICK_PADDING_TOP_PX,
-    })
-
-    for (const brick of bricks) {
+    for (const brick of game.levelManager.bricks) {
       ctx.fillStyle = brick.rgba
       ctx.fillRect(
         brick.position.x,
@@ -263,5 +252,18 @@ canvas.addEventListener('click', () => {
 
 document.addEventListener('pointerlockchange', pointerLockChange)
 
-// Kick off the game loop!
-requestAnimationFrame(frame)
+game.levelManager
+  .loadLevels({
+    imagePath: './assets/levels.png',
+    levelWidth: LEVEL_WIDTH_UNITS,
+    levelHeight: LEVEL_HEIGHT_UNITS,
+    brickWidth: BRICK_WIDTH_PX,
+    brickHeight: BRICK_HEIGHT_PX,
+    brickXOffset: BRICK_PADDING_SIDE_PX,
+    brickYOffset: BRICK_PADDING_TOP_PX,
+  })
+  .then((levelManager) => {
+    levelManager.changeLevel(1)
+    // Kick off the game loop!
+    requestAnimationFrame(frame)
+  })
