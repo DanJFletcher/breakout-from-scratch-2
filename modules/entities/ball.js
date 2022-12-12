@@ -6,6 +6,9 @@ export class Ball {
    */
   state = Ball.State.OnPaddle
 
+  /** @type {Vector2d} */
+  initialVelocity
+
   /**
    *
    * @param {object} opts
@@ -25,6 +28,8 @@ export class Ball {
     this.maxVelocity = opts.maxVelocity
     this.paddleBounceFactor = opts.paddleBounceFactor
     this.paddleCollisionSpeedBoost = opts.paddleCollisionSpeedBoost
+
+    this.initialVelocity = opts.velocity
   }
 
   static State = {
@@ -40,5 +45,13 @@ export class Ball {
       x: this.position.x + this.width / 2,
       y: this.position.y + this.height / 2,
     }
+  }
+
+  /**
+   * Rest state, and velocity of ball
+   */
+  reset() {
+    this.state = Ball.State.OnPaddle
+    this.velocity = this.initialVelocity
   }
 }

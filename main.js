@@ -10,6 +10,7 @@ import {
   BRICK_HEIGHT_PX,
   BRICK_PADDING_SIDE_PX,
   BRICK_PADDING_TOP_PX,
+  BRICK_SCORE,
   BRICK_WIDTH_PX,
   LEVEL_HEIGHT_UNITS,
   LEVEL_WIDTH_UNITS,
@@ -82,6 +83,7 @@ function frame(hrt) {
     ball.position.x += ball.velocity.x * dt
   }
   let ballPaddleCollisionHandled = false
+  let ballBrickCollisionHandled = false
 
   if (intersects(ball, paddle)) {
     ballPaddleCollisionHandled = true
@@ -116,6 +118,25 @@ function frame(hrt) {
     }
   }
 
+  // Handle brick collisions in X axis
+  for (const brick of game.levelManager.bricks) {
+    if (brick.visible === false) continue
+
+    if (intersects(ball, brick)) {
+      ballBrickCollisionHandled = true
+      brick.visible = false
+      game.score += BRICK_SCORE
+
+      if (ball.velocity.x > 0) {
+        ball.position.x = brick.position.x - ball.width
+      } else {
+        ball.position.x = aabbRight(brick)
+      }
+
+      ball.velocity.x = -ball.velocity.x
+    }
+  }
+
   // Move and check for collisions along the y axis
   if (ball.state === Ball.State.Free) {
     ball.position.y += ball.velocity.y * dt
@@ -141,6 +162,26 @@ function frame(hrt) {
     // bounce velocity and factor. This gives us "control" of the ball.
     ball.velocity.x =
       Math.sign(-difference) * ball.paddleBounceFactor.x * factor
+  }
+
+  // Handle collisions with the ball on the Y axis
+  if (!ballBrickCollisionHandled) {
+    for (const brick of game.levelManager.bricks) {
+      if (brick.visible === false) continue
+
+      if (intersects(ball, brick)) {
+        brick.visible = false
+        game.score += BRICK_SCORE
+
+        if (ball.velocity.y > 0) {
+          ball.position.y = brick.position.y - ball.height
+        } else {
+          ball.position.y = aabbBottom(brick)
+        }
+
+        ball.velocity.y = -ball.velocity.y
+      }
+    }
   }
 
   if (aabbRight(ball) > canvas.width) {
@@ -170,7 +211,7 @@ function frame(hrt) {
   ctx.fillStyle = 'white'
   ctx.font = '16px sans-serif'
   ctx.textAlign = 'center'
-  ctx.fillText(`Level: ${game.currentLevel}`, canvas.width / 2, 18)
+  ctx.fillText(`Level: ${game.levelManager.currentLevel}`, canvas.width / 2, 18)
   ctx.textAlign = 'left'
   ctx.fillText(`Score: ${game.score}`, 16, 18)
   ctx.textAlign = 'right'
@@ -187,8 +228,17 @@ function frame(hrt) {
 
     // Draw the bricks
     for (const brick of game.levelManager.bricks) {
+      if (brick.visible === false) continue
+
       ctx.fillStyle = brick.rgba
       ctx.fillRect(
+        brick.position.x,
+        brick.position.y,
+        brick.width,
+        brick.height,
+      )
+      ctx.strokeStyle = '1px solid black'
+      ctx.strokeRect(
         brick.position.x,
         brick.position.y,
         brick.width,
@@ -206,6 +256,13 @@ function frame(hrt) {
       canvas.width / 2,
       canvas.height / 2 + 36,
     )
+  }
+
+  if (game.levelManager.isCurrentLevelComplete) {
+    if (game.levelManager.hasNextLevel) {
+      game.levelManager.nextLevel()
+      ball.reset()
+    }
   }
 
   // Track the last time for the delta time calculation in the subsequent frame.

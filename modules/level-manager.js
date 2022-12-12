@@ -17,6 +17,18 @@ export class LevelManager {
   /** @type {Brick[]} */
   bricks = []
 
+  get currentLevel() {
+    return this.#currentLevel
+  }
+
+  get isCurrentLevelComplete() {
+    return this.bricks.every((brick) => !brick.visible)
+  }
+
+  get hasNextLevel() {
+    return this.#currentLevel < this.#numberOfLevels
+  }
+
   /**
    * Load new levels image
    *
@@ -59,6 +71,15 @@ export class LevelManager {
    */
   changeLevel(num) {
     this.bricks = this.#generateBricks(num - 1)
+
+    this.#currentLevel = num
+  }
+
+  /**
+   * Load next level
+   */
+  nextLevel() {
+    this.changeLevel(this.#currentLevel + 1)
   }
 
   /**
@@ -111,8 +132,8 @@ export class LevelManager {
         bricks.push(
           new Brick({
             position: {
-              x: col + this.#brickXOffset + col * this.#brickWidth,
-              y: row + this.#brickYOffset + row * this.#brickHeight,
+              x: this.#brickXOffset + col * this.#brickWidth,
+              y: this.#brickYOffset + row * this.#brickHeight,
             },
             width: this.#brickWidth,
             height: this.#brickHeight,

@@ -21,7 +21,7 @@ export class Game {
   reset() {
     this.playerLives = PLAYER_STARTING_LIVES
     this.score = 0
-    this.currentLevel = 0
+    this.levelManager.changeLevel(1)
     this.state = Game.State.Playing
   }
 
