@@ -256,12 +256,30 @@ function frame(hrt) {
       canvas.width / 2,
       canvas.height / 2 + 36,
     )
+  } else if (game.state === Game.State.GameWon) {
+    ctx.fillStyle = 'white'
+    ctx.font = '48px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText('You Won!', canvas.width / 2, canvas.height / 2)
+    ctx.font = '24px sans-serif'
+    ctx.fillText(
+      `Score: ${game.score}`,
+      canvas.width / 2,
+      canvas.height / 2 + 36,
+    )
+    ctx.fillText(
+      'Click to play again',
+      canvas.width / 2,
+      canvas.height / 2 + 72,
+    )
   }
 
   if (game.levelManager.isCurrentLevelComplete) {
     if (game.levelManager.hasNextLevel) {
       game.levelManager.nextLevel()
       ball.reset()
+    } else {
+      game.state = Game.State.GameWon
     }
   }
 
@@ -298,7 +316,10 @@ canvas.addEventListener('click', () => {
   canvas.requestPointerLock()
 
   if (document.pointerLockElement === canvas) {
-    if (game.state === Game.State.GameOver) {
+    if (
+      game.state === Game.State.GameOver ||
+      game.state === Game.State.GameWon
+    ) {
       ball.state = Ball.State.OnPaddle
       game.reset()
     } else if (ball.state === Ball.State.OnPaddle) {
@@ -311,7 +332,7 @@ document.addEventListener('pointerlockchange', pointerLockChange)
 
 game.levelManager
   .loadLevels({
-    imagePath: './assets/levels.png',
+    imagePath: './assets/debug.png',
     levelWidth: LEVEL_WIDTH_UNITS,
     levelHeight: LEVEL_HEIGHT_UNITS,
     brickWidth: BRICK_WIDTH_PX,
